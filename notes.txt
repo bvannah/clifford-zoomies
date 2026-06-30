@@ -1,0 +1,14 @@
+a later 3d version with cool vintage pixelated graphics. you can do first or third person, jump off furniture
+it's a bit slower, involves more stopping and maybe puzzle solving. 
+    but you always have a way to gain more momentum needed to get to higher levels
+
+
+
+code structure:
+    one file controls
+    one file sprites spawning
+    one file bounce handling (collisions)
+
+
+sprite animation stuff:
+- tail can be separate layer for more varied animation frames (tail on 10 frames, idle body on 3 or something)
