@@ -29,6 +29,8 @@ interesting npcs
 
 /*
 TODO:
+start itch.io deployment following tutorial
+turn off bboxes for release version
 make player collision box much shorter -- half the height
 add detailed background texture to make it look like you are moving faster
 make furns spawn within radius of player, quite wide, pretty tall, not below though
