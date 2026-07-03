@@ -51,7 +51,7 @@ concurrency:
 # Configure the release workflow by editing the following values.
 env:
   # The base filename of the binary produced by `cargo build`.
-  cargo_build_binary_name: my_game
+  cargo_build_binary_name: clifford_zoomies
 
   # The path to the assets directory.
   assets_path: assets
@@ -68,7 +68,7 @@ env:
   # The base filename of the binary in the package produced by this workflow.
   # Applies to Windows, macOS, and Linux releases.
   # Defaults to `cargo_build_binary_name` if commented out.
-  #app_binary_name: my_game
+  #app_binary_name: clifford_zoomies
 
   # The name of the `.zip` or `.dmg` file produced by this workflow.
   # Defaults to `app_binary_name` if commented out.
