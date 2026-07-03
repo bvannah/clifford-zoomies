@@ -7,6 +7,3 @@ edition = "2024"
 bevy = {version = "0.18.1", features = []}
 bevy_rapier2d = "0.34.0"
 rand = "0.10.1"
-
-[lib]
-crate-type = ["cdylib", "rlib"]
