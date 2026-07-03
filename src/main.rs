@@ -24,16 +24,20 @@ almost dreamlike. peaceful. a little bit spooky, but mostly mysterious
 twinkling stars.
 slow music
 interesting npcs
+    they also jump around unless they see you.
+    if they see you, they will stop or say hi
+    frogs, people, other dogs, cats, birds
+world map! biomes, random spawning, etc.
 */
 
 
 /*
 TODO:
-start itch.io deployment following tutorial
 turn off bboxes for release version
-make player collision box much shorter -- half the height
+make player collision box much shorter -- half the height. this will require separating sprite from collision box
 add detailed background texture to make it look like you are moving faster
 make furns spawn within radius of player, quite wide, pretty tall, not below though
+    if there are too many furns, dont spawn more?
 improve movement a LOT -- the balance between vertical and horizontal movement seems wrong
 
 

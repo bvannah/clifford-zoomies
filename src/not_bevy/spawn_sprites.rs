@@ -5,7 +5,7 @@ use rand::prelude::*;
 
 use super::player_components::*;
 
-pub const CANVAS_SIZE: Vec2 = Vec2::new(480.*1.0, 270.*1.0);
+pub const CANVAS_SIZE: Vec2 = Vec2::new(480.*1.5, 270.*1.5);
 pub const MAX_SIDE_DIST: f32 = CANVAS_SIZE.x * 1.;
 pub const LEVEL1_HEIGHT: f32 = CANVAS_SIZE.y * 64.;
 pub const PLAYER_SIZE: f32 = 32.0;
