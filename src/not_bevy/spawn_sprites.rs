@@ -1,23 +1,14 @@
-use bevy::{image::ImageLoaderSettings, pbr::MAX_DIRECTIONAL_LIGHTS, prelude::*, time::common_conditions::on_timer};
+use bevy::{image::ImageLoaderSettings, prelude::*};
 use bevy_rapier2d::prelude::*;
-use std::time::Duration;
 use rand::prelude::*;
 
-use super::player_components::*;
-
-pub const CANVAS_SIZE: Vec2 = Vec2::new(480.*1.5, 270.*1.5);
-pub const MAX_SIDE_DIST: f32 = CANVAS_SIZE.x * 1.;
-pub const LEVEL1_HEIGHT: f32 = CANVAS_SIZE.y * 64.;
-pub const PLAYER_SIZE: f32 = 32.0;
-pub const side_player_spawn_dist: f32 = CANVAS_SIZE.x;
-pub const below_player_spawn_dist: f32 = PLAYER_SIZE*2.0;
-pub const above_player_spawn_dist: f32 = CANVAS_SIZE.y * 1.0;
-pub const pspawn_x: f32 = 0.0; //CANVAS_SIZE.x/3.0;
-pub const pspawn_y: f32 = 1.0;// CANVAS_SIZE.y/3.0;
-pub const pspawn_z: f32 = 1.0;
-
-// pub const PLAYER_SPRITE: &str = "30-303953_clifford-the-big-red-dog-clifford-hd-png.png";
-pub const PLAYER_SPRITE: &str = "cliff/clifford.png";
+use super::{
+    constants_and_startup::{
+        above_player_spawn_dist, below_player_spawn_dist, LEVEL1_HEIGHT, MAX_SIDE_DIST,
+        PLAYER_SIZE, side_player_spawn_dist,
+    },
+    player_components::*,
+};
 
 #[derive(Component)]
 pub struct Furn;
