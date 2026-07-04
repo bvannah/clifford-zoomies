@@ -17,7 +17,7 @@ use super::{
 
 pub const CANVAS_SIZE: Vec2 = Vec2::new(480. * 1.5, 270. * 1.5);
 pub const MAX_SIDE_DIST: f32 = CANVAS_SIZE.x * 1.;
-pub const LEVEL1_HEIGHT: f32 = CANVAS_SIZE.y * 64.;
+pub const LEVEL1_HEIGHT: f32 = CANVAS_SIZE.y * 3.;
 pub const PLAYER_SIZE: f32 = 32.0;
 pub const side_player_spawn_dist: f32 = CANVAS_SIZE.x;
 pub const below_player_spawn_dist: f32 = PLAYER_SIZE * 2.0;
@@ -134,7 +134,65 @@ pub fn startup(
         })),
     ));
 
+
+
     commands.spawn((
+
+
+        Player {
+            grounded: true,
+            left_walled: false,
+            right_walled: false,
+            bounce_timer: 0,
+        },
+        Transform::from_xyz(pspawn_x, pspawn_y, pspawn_z),
+        Velocity {
+            linear: Vec2::new(1.0, 2.0),
+            angular: 0.0,
+        },
+        RigidBody::Dynamic,
+        Collider::cuboid(PLAYER_SIZE / 2.0, PLAYER_SIZE / 2.0),
+        Restitution::new(0.8),
+        Friction::new(0.7),
+        ColliderMassProperties::Density(2.0),
+        LockedAxes::ROTATION_LOCKED,
+        ActiveEvents::COLLISION_EVENTS | ActiveEvents::CONTACT_FORCE_EVENTS,
+        ))
+        .with_children(|parent| {
+            parent.spawn(( //sprite bundle
+                Sprite {
+                    image: asset_server.load(PLAYER_SPRITE),
+                    texture_atlas: Some(TextureAtlas {
+                        layout: texture_atlas_layout,
+                        index: 0,
+                    }),
+                    ..default()
+                },
+                
+                Animator {
+                    animation: "idle".to_string(),
+                    animations: animations,
+                    ..Default::default()
+                },
+            ));
+            });
+        
+    
+
+    spawn_levels(commands, asset_server, config_store, meshes, materials, texture_atlas_layouts);
+
+}
+
+
+fn spawn_levels(mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut config_store: ResMut<GizmoConfigStore>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<BackgroundMaterial>>,
+    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,){
+
+
+    commands.spawn(( // floor
         Sprite {
             custom_size: Some(Vec2::new(MAX_SIDE_DIST * 2.0, 1.0)),
             image_mode: SpriteImageMode::Sliced(TextureSlicer {
@@ -149,7 +207,7 @@ pub fn startup(
         super::spawn_sprites::Furn,
     ));
 
-    commands.spawn((
+    commands.spawn(( // left wall
         Sprite {
             custom_size: Some(Vec2::new(1.0, LEVEL1_HEIGHT)),
             image_mode: SpriteImageMode::Sliced(TextureSlicer {
@@ -164,7 +222,7 @@ pub fn startup(
         super::spawn_sprites::Furn,
     ));
 
-    commands.spawn((
+    commands.spawn(( // right wall
         Sprite {
             custom_size: Some(Vec2::new(1.0, LEVEL1_HEIGHT)),
             image_mode: SpriteImageMode::Sliced(TextureSlicer {
@@ -180,51 +238,32 @@ pub fn startup(
     ));
 
     commands.spawn((
-        Player {
-            grounded: true,
-            left_walled: false,
-            right_walled: false,
-            bounce_timer: 0,
-        },
+    //     Mesh2d(meshes.add(Rectangle::new(MAX_SIDE_DIST * 2., CANVAS_SIZE.x * LEVEL1_HEIGHT))),
+    //     MeshMaterial2d(materials.add(BackgroundMaterial {
+    //         color_texture: asset_server.load(
+    //             "Screenshot From 2026-06-10 12-54-36.png"),
+    //     }),
+    // )
+
         Sprite {
-            image: asset_server.load(PLAYER_SPRITE),
-            texture_atlas: Some(TextureAtlas {
-                layout: texture_atlas_layout,
-                index: 0,
-            }),
+            custom_size: Some(Vec2::new(MAX_SIDE_DIST*2.0, LEVEL1_HEIGHT)),
+            image: asset_server.load_with_settings(
+                "second_floor.png",
+            |settings: &mut ImageLoaderSettings| {
+                        settings
+                            .sampler
+                            .get_or_init_descriptor();
+                            // .set_filter(
+                            //     bevy::image::ImageFilterMode::Nearest,
+                            // );
+                        },
+            ),
             ..default()
         },
-        Transform::from_xyz(pspawn_x, pspawn_y, pspawn_z),
-        RigidBody::Dynamic,
-        Collider::cuboid(PLAYER_SIZE / 2.0, PLAYER_SIZE / 2.0),
-        Restitution::new(0.8),
-        Friction::new(0.7),
-        ColliderMassProperties::Density(2.0),
-        Velocity {
-            linear: Vec2::new(1.0, 2.0),
-            angular: 0.0,
-        },
-        LockedAxes::ROTATION_LOCKED,
-        ActiveEvents::COLLISION_EVENTS | ActiveEvents::CONTACT_FORCE_EVENTS,
-        Animator {
-            animation: "idle".to_string(),
-            animations: animations,
-            ..Default::default()
-        },
-    ));
+        Transform::from_xyz(0.0, LEVEL1_HEIGHT / 2.0, 0.0),
 
-    commands.spawn((
-        Mesh2d(meshes.add(Rectangle::new(MAX_SIDE_DIST * 2., CANVAS_SIZE.x * 40.))),
-        MeshMaterial2d(materials.add(BackgroundMaterial {
-            color_texture: asset_server.load_with_settings(
-                "Screenshot From 2026-06-10 12-54-36.png",
-                |settings: &mut ImageLoaderSettings| {
-                    settings
-                        .sampler
-                        .get_or_init_descriptor()
-                        .set_address_mode(ImageAddressMode::Repeat);
-                },
-            ),
-        })),
-    ));
+
+
+));
+
 }

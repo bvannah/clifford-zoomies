@@ -39,6 +39,8 @@ add detailed background texture to make it look like you are moving faster
 make furns spawn within radius of player, quite wide, pretty tall, not below though
     if there are too many furns, dont spawn more?
 improve movement a LOT -- the balance between vertical and horizontal movement seems wrong
+make a background image -- custom, blank room that can be repeated
+add custom furniture like desks and stuff that have colliders, random furniture will not spawn there
 
 
 */
@@ -93,14 +95,15 @@ fn controls(
     mut velocity: Single<&mut Velocity, With<Player>>,
     // player_entity: Single<&mut Entity, With<Player>>,
     // mut player: Single<&mut Player>,
-    mut player_query : Query<(&mut Player,&mut Sprite,&mut Animator)>,
+    mut player_query : Query<(&mut Player)>,
+    mut sprite_query : Query<(&mut Sprite,&mut Animator)>,
     collider_query: Query<&Collider>,
     mut collision_events: MessageReader<CollisionEvent>,
     mut contact_force_events: MessageReader<ContactForceEvent>,
     buttons: Res<ButtonInput<KeyCode>>, 
 ) {
 
-    if let Ok((mut player,mut sprite,mut animator)) = player_query.single_mut(){
+    if let Ok(mut player) = player_query.single_mut() and let Ok((mut sprite, mut animator)) = sprite_query.single_mut(){
 
         // update grounded status
         // TODO: should really be based on colliders
@@ -203,6 +206,7 @@ fn controls(
 
 
     }
+}
 
 
     // // let mut total_player_force = Vec2::ZERO;
@@ -306,7 +310,6 @@ fn controls(
     //     //     info!("forces: {}", forces_count)
     //     // }
     // }
-}
 
 fn update_animation(){
 
