@@ -28,6 +28,7 @@ pub const pspawn_z: f32 = 1.0;
 pub const PLAYER_SPRITE: &str = "cliff/clifford.png";
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+
 pub struct BackgroundMaterial {
     #[texture(0)]
     #[sampler(1)]

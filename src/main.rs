@@ -79,7 +79,7 @@ fn main() -> AppExit {
         .add_plugins(DefaultPlugins)
         .add_plugins((FurnPlugin, Material2dPlugin::<BackgroundMaterial>::default(
             ),))
-        .add_plugins(RapierDebugRenderPlugin::default())
+        // .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(AtlasAnimationPlugin)
         .add_systems(Startup, startup)
         // .add_systems(FixedUpdate, (gravity, rl_move, check_in_bounds, check_collisions).chain())
