@@ -95,15 +95,14 @@ fn controls(
     mut velocity: Single<&mut Velocity, With<Player>>,
     // player_entity: Single<&mut Entity, With<Player>>,
     // mut player: Single<&mut Player>,
-    mut player_query : Query<(&mut Player)>,
-    mut sprite_query : Query<(&mut Sprite,&mut Animator)>,
+    mut player_query : Query<(&mut Player,&mut Sprite,&mut Animator)>,
     collider_query: Query<&Collider>,
     mut collision_events: MessageReader<CollisionEvent>,
     mut contact_force_events: MessageReader<ContactForceEvent>,
     buttons: Res<ButtonInput<KeyCode>>, 
 ) {
 
-    if let Ok(mut player) = player_query.single_mut() and let Ok((mut sprite, mut animator)) = sprite_query.single_mut(){
+    if let Ok((mut player,mut sprite,mut animator)) = player_query.single_mut(){
 
         // update grounded status
         // TODO: should really be based on colliders
