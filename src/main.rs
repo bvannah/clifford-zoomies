@@ -104,7 +104,7 @@ fn controls(
 ) {
 
     if let Ok(mut player) = player_query.single_mut() &&
-        let Ok((mut sprite, mut animator)) = SpriteImageMode_query.single_mut(){
+        let Ok((mut sprite, mut animator)) = sprite_query.single_mut(){
 
         // update grounded status
         // TODO: should really be based on colliders
