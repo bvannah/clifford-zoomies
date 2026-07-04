@@ -151,7 +151,7 @@ pub fn startup(
             angular: 0.0,
         },
         RigidBody::Dynamic,
-        Collider::cuboid(PLAYER_SIZE / 2.0, PLAYER_SIZE / 2.0),
+        Collider::cuboid(PLAYER_SIZE / 2.0, PLAYER_SIZE / 2.0/2.0),
         Restitution::new(0.8),
         Friction::new(0.7),
         ColliderMassProperties::Density(2.0),
@@ -174,6 +174,8 @@ pub fn startup(
                     animations: animations,
                     ..Default::default()
                 },
+                Transform::from_xyz(0.0, 8.0, 0.0),
+
             ));
             });
         
