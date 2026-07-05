@@ -78,8 +78,8 @@ use not_bevy::bounce::*;
 #[derive(Event)]
 struct EndGame;
 
-#[derive(Event)]
-struct Bounce;
+// #[derive(Event)]
+// struct Bounce;
 
 fn main() -> AppExit {
     App::new()
@@ -93,8 +93,8 @@ fn main() -> AppExit {
         // .add_systems(FixedUpdate, (gravity, rl_move, check_in_bounds, check_collisions).chain())
         // .add_systems(FixedUpdate, (rl_move, check_in_bounds, check_collisions).chain())
         // .add_systems(FixedUpdate, (check_in_bounds, check_collisions, display_events).chain())
-        .add_systems(Update, (display_events, controls))
-        .add_systems(PostUpdate, (move_camera, update_player_animations))
+        .add_systems(Update, (controls,))
+        .add_systems(PostUpdate, (move_camera,))
         .add_observer(respawn_on_endgame)
         .run()
 }
@@ -173,21 +173,8 @@ fn controls(
             }
 
         }
-
-        // update LR collider status for left-right
-        // detect if there is an object colliding left, right, and/or bottom
-        // update bounce statuses
-        // for (furn, f_transform) in collider_query{
-        //     if f_transform.translation.x 
-                // update LR collider status for left-right
-                // detect if there is an object colliding left, right, and/or bottom
-
                 // despawn all furns if player clicks on them 
                 // will allow player to escape if they can click walls (indiv pixels)
-
-
-        // }
-
 
 
         // update bounce timer regardless. we will set it to 0 later if we want to
@@ -299,112 +286,6 @@ fn controls(
 }
 
 
-    // // let mut total_player_force = Vec2::ZERO;
-    // // let mut is_any_contact: bool = false;
-    // // let mut forces_count: i32 = 0;
-
-    // // we want to update player collision state every frame so that we can do animations
-    // // if true{
-    // // if buttons.pressed(KeyCode::KeyD) || buttons.pressed(KeyCode::KeyA) || buttons.pressed(KeyCode::KeyW){
-    //     // if any of our interesting keys are pressed, calc all collisions an
-
-
-    //     // update grounded status
-    //     if velocity.linear.y == 0.0{
-    //         player.grounded = true;
-    //     }
-    //     else {
-    //         player.grounded = false;
-    //     }
-    //     // update non-ground colliders for bouncing
-
-
-
-
-
-    //         // TODO:
-    //         // detect if touching any collider
-    //         // need angle, collision status, etc
-
-    //         // https://rapier.rs/docs/user_guides/bevy_plugin/advanced_collision_detection/
-
-    //         // if touching collider, calculate angle
-    //         // multiply clifford jump velocity by angle, give extra small boost to each direction
-    //         // if vert velocity is 0, do a different calculation? (just add)
-
-
-    //     // TODO: filter by events that actually touch the player, not just all contact force events
-    //     // because sometimes there are cfe that don't?? for some reason?
-
-
-    //     // for cfe in contact_force_events.read(){
-    //     //     // info!("Contact: {:?} <-> {:?}", cfe.collider1, cfe.collider2);
-    //     //     // for now, everything should be a match because the player is the only thing that can move
-    //     //     if cfe.collider2.index() == player_entity.1.index(){// || cfe.collider2.index() == player_entity.index(){
-    //     //         // info!("Match!");
-    //     //         // what do these forces acually mean? they are very large integers.
-    //     //         // if i time things perfectly, it does seem like the forces can be negative or positive depending on direction
-
-    //     //         total_player_force.y += cfe.total_force.y;
-    //     //         total_player_force.x += cfe.total_force.x;
-    //     //         is_any_contact = true;
-    //     //         forces_count += 1;
-
-    //     //     }
-    //     //     else if cfe.collider1.index() == player_entity.1.index(){
-    //     //         is_any_contact = true;
-    //     //     }
-    //     // }
-    // // }
-
-    // if buttons.pressed(KeyCode::KeyD){
-    //     if velocity.linear.x < 300.{
-    //         velocity.linear.x += 10.;
-    //         // play bound animation
-    //     }
-    //     else if velocity.linear.x < 300.{
-    //         velocity.linear.x = velocity.linear.x.powf(1.05);
-    //         // play run animation
-    //     }
-    // }
-    // if buttons.pressed(KeyCode::KeyA){
-    //     if velocity.linear.x > -300.{
-    //         velocity.linear.x += -10.;
-    //         // play bound animation
-    //     }
-    //     else if velocity.linear.x > -300.{
-    //         velocity.linear.x = -((-velocity.linear.x).powf(1.05));
-    //         // play run animation
-    //     }
-    // }
-
-    // if buttons.just_pressed(KeyCode::KeyW// here, we can replace this first velocity with W, and maybe velocity needs to be a 3d vector to handle the movement. or, y_velocity, x_velocity, z_velocity
-    // ) {
-
-
-    //     // if total_player_force.y == 0.0{
-    
-    //     //     if is_any_contact{
-    //     //         velocity.linear.y += 300.;
-    //     //     }
-
-    //     // }
-    //     // else{
-    //     //     velocity.linear.y += 300.;
-    //     //     // velocity.linear.x += total_player_force.x/forces_count as f32;
-    //     //     // velocity.linear.y += total_player_force.y/forces_count as f32;
-    //     //     // velocity.linear += total_player_force;
-    //     //     velocity.linear.x *= 1.2;
-    //     //     velocity.linear.y *= 1.2;
-    //     //     info!("Total force: {}", total_player_force);
-    //     //     info!("forces: {}", forces_count)
-    //     // }
-    // }
-
-fn update_animation(){
-
-
-}
 
 fn check_in_bounds(
     player: Single<&Transform, With<Player>>,
@@ -444,60 +325,5 @@ fn move_camera(
     camera.translation = camera.translation.lerp(target, lerp_speed * time.delta_secs());
 }   
 
-/* A system that displays the events. */
-fn display_events(
-    mut collision_events: MessageReader<CollisionEvent>,
-    mut contact_force_events: MessageReader<ContactForceEvent>,
-) {
-    // for collision_event in collision_events.read() {
-    //     // println!("Received collision event: {:?}", collision_event);
-    //     info!("Received collision event: {:?}", collision_event);
-
-    // }
-
-    // for contact_force_event in contact_force_events.read() {
-    //     info!("Received contact force event: {:?}", contact_force_event);
-    // }
-}
-
-fn update_player_collisions(player_entity: Single<Entity, With<Player>>){
 
 
-}
-
-
-fn update_player_animations(
-    mut player_query : Query<(&mut Player,&mut Sprite,&mut Animator)>,
-    velocity: Single<& Velocity, With<Player>>
-) {
-    if let Ok((player,mut sprite,mut animator)) = player_query.single_mut() {
-
-        if velocity.linear.x < 0. {
-            sprite.flip_x = false;
-        }
-        else if velocity.linear.x > 0.{
-            sprite.flip_x = true;
-        }
-
-        // // boring low-priority animations first so we can overwrite them later
-        // if player.grounded{
-        //     if velocity.linear.x == 0.{
-        //         animator.animation = "idle".to_string();
-        //     }
-        //     else {
-        //         animator.animation = "walk".to_string();
-        //     }
-        // }
-        
-        // if !player.grounded {
-        //     // some animation logic based on velocity, bounce timer, etc.
-        //     // decide between a bunch of stuff
-        //     // animator.animation = "jump".to_string();
-        // }
-        // else{
-        //     ()
-
-        // }
-    
-    }
-}

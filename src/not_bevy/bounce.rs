@@ -2,17 +2,6 @@ use bevy::{prelude::*, ecs::entity::EntityIndex};
 use bevy_rapier2d::{plugin::ReadRapierContext, rapier::geometry::CollisionEventFlags};
 use super::player_components::*;
 
-pub fn get_bounce_directions(
-    player_position: Vec3,
-    en2_transform: Vec3,
-) -> (bool, bool, bool){
-    let is_left_bounce = false;
-    let is_right_bounce = false;
-    let is_bottom_bounce = false;
-
-    return (is_left_bounce, is_right_bounce, is_bottom_bounce);
-}
-
 pub fn process_bounce_directions(
     entity1: &Entity,
     entity2: &Entity,
