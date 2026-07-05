@@ -157,10 +157,10 @@ pub fn startup(
         RigidBody::Dynamic,
         Collider::cuboid(PLAYER_SIZE / 2.0, PLAYER_SIZE / 2.0/2.0),
         Restitution::new(0.3),
-        Friction::new(0.7),
+        Friction::new(0.9),
         ColliderMassProperties::Density(2.0),
         LockedAxes::ROTATION_LOCKED,
-        ActiveEvents::COLLISION_EVENTS | ActiveEvents::CONTACT_FORCE_EVENTS,
+        ActiveEvents::COLLISION_EVENTS, // | ActiveEvents::CONTACT_FORCE_EVENTS,
         ))
         .with_children(|parent| {
             parent.spawn(( //sprite bundle

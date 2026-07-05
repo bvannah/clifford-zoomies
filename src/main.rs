@@ -107,7 +107,7 @@ fn controls(
     mut sprite_query : Query<(&mut Sprite, &mut Animator)>,
     collider_query: Query<(&Collider, &Transform), With<Furn>>, // are walls furns? i guess it doesnt matter
     mut collision_events: MessageReader<CollisionEvent>,
-    mut contact_force_events: MessageReader<ContactForceEvent>,
+    // mut contact_force_events: MessageReader<ContactForceEvent>,
     rapier_context: ReadRapierContext,
     buttons: Res<ButtonInput<KeyCode>>, 
     mouse_buttons: Res<ButtonInput<MouseButton>>,
