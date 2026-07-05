@@ -27,6 +27,7 @@ pub const pspawn_y: f32 = 1.0;
 pub const pspawn_z: f32 = 1.0;
 pub const PLAYER_SPRITE: &str = "cliff/clifford.png";
 pub const BITE_RANGE: f32 = 48.;
+pub const BOUNCE_FORGIVENESS: i8 = 20;
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 
@@ -148,6 +149,9 @@ pub fn startup(
             bottom_walled:0,
             bounce_timer: 0,
             collider_map: HashMap::new(),
+            left_forgiveness: 0,
+            right_forgiveness: 0,
+            bottom_forgiveness: 0,
         },
         Transform::from_xyz(pspawn_x, pspawn_y, pspawn_z),
         Velocity {
@@ -226,6 +230,7 @@ fn spawn_levels(mut commands: Commands,
         Transform::from_xyz(-MAX_SIDE_DIST, LEVEL1_HEIGHT / 2.0, 1.0),
         Collider::cuboid(1.0 / 2.0, LEVEL1_HEIGHT / 2.0),
         super::spawn_sprites::Furn,
+        super::spawn_sprites::NoBounceWall,
     ));
 
     commands.spawn(( // right wall
@@ -241,6 +246,7 @@ fn spawn_levels(mut commands: Commands,
         Transform::from_xyz(MAX_SIDE_DIST, LEVEL1_HEIGHT / 2.0, 1.0),
         Collider::cuboid(1.0 / 2.0, LEVEL1_HEIGHT / 2.0),
         super::spawn_sprites::Furn,
+        super::spawn_sprites::NoBounceWall,
     ));
 
     commands.spawn((

@@ -13,6 +13,8 @@ use super::{
 #[derive(Component)]
 pub struct Furn;
 
+#[derive(Component)]
+pub struct NoBounceWall;
 
 pub struct FurnPlugin;
 
@@ -76,7 +78,7 @@ fn spawn_furns(
                 let furn_y1 = y_location - (y_size / 2.0);
                 let furn_y2 = y_location + (y_size / 2.0);
                 if ((furn_x1 >= player.translation.x - 16.0) && (furn_x2 <= player.translation.x + 16.0)) &&
-                    ((furn_y1 >= player.translation.y - 8.0 ) && (furn_y2 <= player.translation.y + 8.0)){
+                    ((furn_y1 >= player.translation.y - 16.0 ) && (furn_y2 <= player.translation.y + 16.0)){
                         // still incompatible
                         // info!("tried to make incompatible furn");
                         // info!("{furn_x1} {furn_x2} {furn_y1} {furn_y2}");

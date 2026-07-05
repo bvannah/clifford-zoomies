@@ -1,6 +1,8 @@
 use bevy::{prelude::*, ecs::entity::EntityIndex};
+use bevy_rapier2d::dynamics::Velocity;
 use bevy_rapier2d::{plugin::ReadRapierContext, rapier::geometry::CollisionEventFlags};
 use super::player_components::*;
+use super::constants_and_startup::*;
 
 pub fn process_bounce_directions(
     entity1: &Entity,
@@ -10,6 +12,7 @@ pub fn process_bounce_directions(
     player_id: EntityIndex,
     is_start: bool,
     rapier_context: &ReadRapierContext,
+    velocity: & Velocity,
 
 ){
 
@@ -30,7 +33,6 @@ pub fn process_bounce_directions(
 
 
 
-
                 // Find the contact points for this pair of colliders
                 let context = rapier_context.single().unwrap();
                 if let Some(contact_pair) = context.contact_pair(*entity1, *entity2) {
@@ -42,19 +44,26 @@ pub fn process_bounce_directions(
                             if is_start{
                                 player.right_walled += 1;
                                 player.collider_map.insert(entity2.index_u32(), 0_i8);
+                                player.right_forgiveness = BOUNCE_FORGIVENESS;
+
                             }
                         }
                         if normal.x < 0.0{
                             if is_start{
                                 player.left_walled += 1;
                                 player.collider_map.insert(entity2.index_u32(), 1_i8);
+                                player.bottom_forgiveness = BOUNCE_FORGIVENESS;
+
 
                             }
                         }
-                        if normal.y < 0.0{
+                        // info!("velocity y is {}", velocity.linear.y);
+                        if normal.x == 0.0 && normal.y < 0.0{// && velocity.linear.y > 0.{
                             if is_start{
                                 player.bottom_walled += 1;
                                 player.collider_map.insert(entity2.index_u32(), 2_i8);
+                                player.bottom_forgiveness = BOUNCE_FORGIVENESS;
+
                             }
                         }
                     }

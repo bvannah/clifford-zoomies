@@ -38,9 +38,7 @@ world map! biomes, random spawning, etc.
 
 /*
 TODO:
-if there are more than N furns within radius of player, dont spawn more
-dont spawn any to trap player, or let player bite out
-improve movement a LOT -- the balance between vertical and horizontal movement seems wrongs
+player bite
 make a background image -- custom, blank room that can be repeated
 add custom furniture like desks and stuff that have colliders, random furniture will not spawn there
 add timing forgiveness for bouncing
@@ -105,7 +103,7 @@ fn controls(
     // mut player: Single<&mut Player>,
     mut player_query : Query<(Entity, &mut Player, &Transform)>,
     mut sprite_query : Query<(&mut Sprite, &mut Animator)>,
-    collider_query: Query<(&Collider, &Transform), With<Furn>>, // are walls furns? i guess it doesnt matter
+    collider_query: Query<(&Collider, &Transform), (With<Furn>, Without<NoBounceWall>)>, // are walls furns? i guess it doesnt matter
     mut collision_events: MessageReader<CollisionEvent>,
     // mut contact_force_events: MessageReader<ContactForceEvent>,
     rapier_context: ReadRapierContext,
@@ -120,6 +118,17 @@ fn controls(
         let player_position = p_transform.translation;
         let player_id = player_entity.index();
 
+        // update player bouce forgiveness timers
+        if player.left_forgiveness > 0{
+            player.left_forgiveness -= 1;
+        }
+        if player.right_forgiveness > 0{
+            player.right_forgiveness -= 1;
+        }
+        if player.bottom_forgiveness > 0{
+            player.bottom_forgiveness -= 1;
+        }
+
 
         for event in collision_events.read(){
             match event {
@@ -127,13 +136,13 @@ fn controls(
                     
                     let is_start = true;
                     info!("Collision started between {:?} and {:?}", entity1, entity2);
-                    process_bounce_directions(entity1, entity2, &mut player, player_id, is_start, & rapier_context);
+                    process_bounce_directions(entity1, entity2, &mut player, player_id, is_start, & rapier_context, &velocity);
                 }
                 CollisionEvent::Stopped(entity1, entity2, flags) => {
 
                     let is_start = false;
                     info!("Collision stopped between {:?} and {:?}", entity1, entity2);
-                    process_bounce_directions(entity1, entity2, &mut player, player_id, is_start, & rapier_context);
+                    process_bounce_directions(entity1, entity2, &mut player, player_id, is_start, & rapier_context, &velocity);
 
                 }
             }
@@ -197,7 +206,29 @@ fn controls(
         if buttons.just_pressed(KeyCode::KeyW// here, we can replace this first velocity with W, and maybe velocity needs to be a 3d vector to handle the movement. or, y_velocity, x_velocity, z_velocity
         ) {
             if !player.grounded{// in midair, bounce
-                if player.bottom_walled > 0_i32{ // TODO: LR collider, bounce!
+                // if player.left_walled > 0_i32{
+                if player.left_forgiveness > 0{
+                    player.bounce_timer =  1; // reset bounce timer
+                    velocity.linear.x += 200.;
+                    velocity.linear.x *= 2.;
+                    velocity.linear.y += 100.;
+                    info!("left bounce!");
+                    // play abbreviated jump animation
+                    // add y velocity if it's low, multiply y velocity, multiply/bounce x velocity
+                }
+                // if player.right_walled > 0_i32{
+                if player.right_forgiveness > 0{
+                    player.bounce_timer =  1; // reset bounce timer
+                    velocity.linear.x -= 200.;
+                    velocity.linear.x *= 2.;
+                    velocity.linear.y += 100.;
+                    // play abbreviated jump animation
+                    // add y velocity if it's low, multiply y velocity, multiply/bounce x velocity
+                    info!("right bounce!");
+
+                }
+
+                if player.bottom_forgiveness > 0 && !(player.right_forgiveness > 0) && !(player.right_forgiveness > 0){
                     player.bounce_timer =  1; // reset bounce timer
                     velocity.linear.x *= 1.2;
                     if velocity.linear.y < 0.{
@@ -207,22 +238,7 @@ fn controls(
                     velocity.linear.y *= 1.2;
                     // play abbreviated jump animation
                     // add y velocity if it's low, multiply y velocity, multiply/bounce x velocity
-                }
-                if player.left_walled > 0_i32{
-                    player.bounce_timer =  1; // reset bounce timer
-                    velocity.linear.x += 200.;
-                    velocity.linear.x *= 2.;
-                    velocity.linear.y += 300.;
-                    // play abbreviated jump animation
-                    // add y velocity if it's low, multiply y velocity, multiply/bounce x velocity
-                }
-                if player.right_walled > 0_i32{
-                    player.bounce_timer =  1; // reset bounce timer
-                    velocity.linear.x -= 200.;
-                    velocity.linear.x *= 2.;
-                    velocity.linear.y += 300.;
-                    // play abbreviated jump animation
-                    // add y velocity if it's low, multiply y velocity, multiply/bounce x velocity
+                    info!("bottom bounce!");
                 }
 
                 }
