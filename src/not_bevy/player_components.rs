@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 #[derive(Component, Default)]
 pub struct Player {
-    pub grounded : bool,
+    pub grounded: bool,
     pub left_walled: i32,
     pub right_walled: i32,
     pub bottom_walled: i32,

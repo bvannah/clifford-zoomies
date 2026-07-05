@@ -35,9 +35,10 @@ world map! biomes, random spawning, etc.
 // n * 4 percent of the cutscene will be corrupted each time and shortened
 */
 
-
 /*
 TODO:
+currently, we only handle bounce events when the player is entity1
+    sometimes, the player is entity2 (when colliding with the floor). need to be flexible
 player bite
 make a background image -- custom, blank room that can be repeated
 add custom furniture like desks and stuff that have colliders, random furniture will not spawn there
@@ -55,17 +56,15 @@ use bevy_rapier2d::prelude::*;
 
 mod not_bevy;
 use not_bevy::animation::*;
+use not_bevy::bounce::*;
 use not_bevy::constants_and_startup::{
-    startup, BackgroundMaterial, PLAYER_SIZE, pspawn_x, pspawn_y, pspawn_z,
+    BackgroundMaterial, PLAYER_SIZE, pspawn_x, pspawn_y, pspawn_z, startup,
 };
 use not_bevy::player_components::Player;
 use not_bevy::spawn_sprites::*;
-use not_bevy::bounce::*;
-
 
 // #[require(Gravity(1000.), Velocity)]
 // #[require(Velocity)]
-
 
 // #[derive(Component)]
 // struct Gravity(f32);
@@ -83,8 +82,10 @@ fn main() -> AppExit {
     App::new()
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(50.0))
         .add_plugins(DefaultPlugins)
-        .add_plugins((FurnPlugin, Material2dPlugin::<BackgroundMaterial>::default(
-            ),))
+        .add_plugins((
+            FurnPlugin,
+            Material2dPlugin::<BackgroundMaterial>::default(),
+        ))
         // .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(AtlasAnimationPlugin)
         .add_systems(Startup, startup)
@@ -101,116 +102,122 @@ fn controls(
     mut velocity: Single<&mut Velocity, With<Player>>,
     // player_entity: Single<&mut Entity, With<Player>>,
     // mut player: Single<&mut Player>,
-    mut player_query : Query<(Entity, &mut Player, &Transform)>,
-    mut sprite_query : Query<(&mut Sprite, &mut Animator)>,
+    mut player_query: Query<(Entity, &mut Player, &Transform)>,
+    mut sprite_query: Query<(&mut Sprite, &mut Animator)>,
     collider_query: Query<(&Collider, &Transform), (With<Furn>, Without<NoBounceWall>)>, // are walls furns? i guess it doesnt matter
     mut collision_events: MessageReader<CollisionEvent>,
     // mut contact_force_events: MessageReader<ContactForceEvent>,
     rapier_context: ReadRapierContext,
-    buttons: Res<ButtonInput<KeyCode>>, 
+    buttons: Res<ButtonInput<KeyCode>>,
     mouse_buttons: Res<ButtonInput<MouseButton>>,
     window_query: Query<&Window>,
     wall_query: Query<&NoBounceWall>,
 ) {
-
-    if let Ok((player_entity, mut player, p_transform)) = player_query.single_mut() &&
-        let Ok((mut sprite, mut animator)) = sprite_query.single_mut(){
-
+    if let Ok((player_entity, mut player, p_transform)) = player_query.single_mut()
+        && let Ok((mut sprite, mut animator)) = sprite_query.single_mut()
+    {
         let player_position = p_transform.translation;
         let player_id = player_entity.index();
 
         // update player bouce forgiveness timers
-        if player.left_forgiveness > 0{
+        if player.left_forgiveness > 0 {
             player.left_forgiveness -= 1;
         }
-        if player.right_forgiveness > 0{
+        if player.right_forgiveness > 0 {
             player.right_forgiveness -= 1;
         }
-        if player.bottom_forgiveness > 0{
+        if player.bottom_forgiveness > 0 {
             player.bottom_forgiveness -= 1;
         }
         // info!("bf: {}", player.bottom_forgiveness);
 
-
-        for event in collision_events.read(){
+        for event in collision_events.read() {
             match event {
                 CollisionEvent::Started(entity1, entity2, flags) => {
-                    
                     let is_start = true;
                     info!("Collision started between {:?} and {:?}", entity1, entity2);
-                    process_bounce_directions(entity1, entity2, &mut player, player_id, is_start, & rapier_context, &velocity, wall_query);
+                    process_bounce_directions(
+                        entity1,
+                        entity2,
+                        &mut player,
+                        player_id,
+                        is_start,
+                        &rapier_context,
+                        &velocity,
+                        wall_query,
+                    );
                 }
                 CollisionEvent::Stopped(entity1, entity2, flags) => {
-
                     let is_start = false;
                     info!("Collision stopped between {:?} and {:?}", entity1, entity2);
-                    process_bounce_directions(entity1, entity2, &mut player, player_id, is_start, & rapier_context, &velocity, wall_query);
-
+                    process_bounce_directions(
+                        entity1,
+                        entity2,
+                        &mut player,
+                        player_id,
+                        is_start,
+                        &rapier_context,
+                        &velocity,
+                        wall_query,
+                    );
                 }
             }
-
         }
-
-
-
 
         // update grounded status
         // TODO: should really be based on colliders
         // maybe if linear velocity is low and we are touching something below??
-        if velocity.linear.y == 0.0{
+        if velocity.linear.y == 0.0 {
             player.grounded = true;
-        }
-        else {
+        } else {
             player.grounded = false;
         }
 
         // direction facing
         if velocity.linear.x < 0. {
             sprite.flip_x = false;
-        }
-        else if velocity.linear.x > 0.{
+        } else if velocity.linear.x > 0. {
             sprite.flip_x = true;
         }
 
         let has_clicked: bool = false;
         let cursor_pos: Vec2 = Vec2::ZERO;
-        if mouse_buttons.just_pressed(MouseButton::Left){
+        if mouse_buttons.just_pressed(MouseButton::Left) {
             let window = window_query.single().unwrap();
-            if let Some(cursor_pos) = window.cursor_position(){
+            if let Some(cursor_pos) = window.cursor_position() {
                 // get furns that contain this cursor_pos and remove them
                 // TODO: in the future, lower bite range, add animation, add sound
                 // update cursor status and click status
-
             }
-
         }
-                // despawn all furns if player clicks on them 
-                // will allow player to escape if they can click walls (indiv pixels)
-
+        // despawn all furns if player clicks on them
+        // will allow player to escape if they can click walls (indiv pixels)
 
         // update bounce timer regardless. we will set it to 0 later if we want to
-        if player.bounce_timer != 0{
+        if player.bounce_timer != 0 {
             player.bounce_timer += 1;
         }
 
-        if !player.grounded && (velocity.linear.y - 0.0).abs() < 100.{
+        if !player.grounded && (velocity.linear.y - 0.0).abs() < 100. {
             animator.animation = "fall".to_string();
-        }
-        else if velocity.linear.y > 100. && player.bounce_timer > jump_end_frames * fps_converter{
+        } else if velocity.linear.y > 100. && player.bounce_timer > jump_end_frames * fps_converter
+        {
             // if jump animation is done
             animator.animation = "float_up".to_string();
-        }
-        else if velocity.linear.y < -100. && player.bounce_timer > jump_end_frames * fps_converter{
+        } else if velocity.linear.y < -100. && player.bounce_timer > jump_end_frames * fps_converter
+        {
             // if arbitrary time duration is done (dont want animation changing a bunch when we are doing small bounces on the ground)
             animator.animation = "float_down".to_string();
         }
 
-        if buttons.just_pressed(KeyCode::KeyW// here, we can replace this first velocity with W, and maybe velocity needs to be a 3d vector to handle the movement. or, y_velocity, x_velocity, z_velocity
+        if buttons.just_pressed(
+            KeyCode::KeyW, // here, we can replace this first velocity with W, and maybe velocity needs to be a 3d vector to handle the movement. or, y_velocity, x_velocity, z_velocity
         ) {
-            if !player.grounded{// in midair, bounce
+            if !player.grounded {
+                // in midair, bounce
                 // if player.left_walled > 0_i32{
-                if player.left_forgiveness > 0{
-                    player.bounce_timer =  1; // reset bounce timer
+                if player.left_forgiveness > 0 {
+                    player.bounce_timer = 1; // reset bounce timer
                     velocity.linear.x += 200.;
                     velocity.linear.x *= 2.;
                     velocity.linear.y += 100.;
@@ -219,21 +226,23 @@ fn controls(
                     // add y velocity if it's low, multiply y velocity, multiply/bounce x velocity
                 }
                 // if player.right_walled > 0_i32{
-                if player.right_forgiveness > 0{
-                    player.bounce_timer =  1; // reset bounce timer
+                if player.right_forgiveness > 0 {
+                    player.bounce_timer = 1; // reset bounce timer
                     velocity.linear.x -= 200.;
                     velocity.linear.x *= 2.;
                     velocity.linear.y += 100.;
                     // play abbreviated jump animation
                     // add y velocity if it's low, multiply y velocity, multiply/bounce x velocity
                     info!("right bounce!");
-
                 }
 
-                if player.bottom_forgiveness > 0 && !(player.right_forgiveness > 0) && !(player.right_forgiveness > 0){
-                    player.bounce_timer =  1; // reset bounce timer
+                if player.bottom_forgiveness > 0
+                    && !(player.right_forgiveness > 0)
+                    && !(player.right_forgiveness > 0)
+                {
+                    player.bounce_timer = 1; // reset bounce timer
                     velocity.linear.x *= 1.2;
-                    if velocity.linear.y < 0.{
+                    if velocity.linear.y < 0. {
                         velocity.linear.y *= -1.;
                     }
                     velocity.linear.y += 400.;
@@ -242,78 +251,60 @@ fn controls(
                     // add y velocity if it's low, multiply y velocity, multiply/bounce x velocity
                     // info!("bottom bounce!");
                 }
-
-                }
-            else if player.bounce_timer == 0{ // grounded, start basic jump
+            } else if player.bounce_timer == 0 {
+                // grounded, start basic jump
                 player.bounce_timer += 1;
                 animator.animation = "jump".to_string();
             }
-            
-
         }
 
-
-
-        if buttons.pressed(KeyCode::KeyD){
-            if velocity.linear.x < 300.{
+        if buttons.pressed(KeyCode::KeyD) {
+            if velocity.linear.x < 300. {
                 velocity.linear.x += 10.;
                 // play bound animation
-            }
-            else if velocity.linear.x < 300.{
+            } else if velocity.linear.x < 300. {
                 velocity.linear.x = velocity.linear.x.powf(1.05);
                 // play run animation
             }
         }
-        if buttons.pressed(KeyCode::KeyA){
-            if velocity.linear.x > -300.{
+        if buttons.pressed(KeyCode::KeyA) {
+            if velocity.linear.x > -300. {
                 velocity.linear.x += -10.;
                 // play bound animation
-            }
-            else if velocity.linear.x > -300.{
+            } else if velocity.linear.x > -300. {
                 velocity.linear.x = -((-velocity.linear.x).powf(1.05));
                 // play run animation
             }
         }
 
-        if player.grounded{
-            if player.bounce_timer == jump_startup_frames * fps_converter{
+        if player.grounded {
+            if player.bounce_timer == jump_startup_frames * fps_converter {
                 velocity.linear.y += 400.;
             }
-            if player.bounce_timer > jump_startup_frames * fps_converter{ // this is a stupid way to do this. we want to check collider velocity
+            if player.bounce_timer > jump_startup_frames * fps_converter {
+                // this is a stupid way to do this. we want to check collider velocity
                 player.bounce_timer = 0;
                 animator.animation = "land".to_string();
                 // we want to force a pause
-
             }
-            if player.bounce_timer == 0{
-                if velocity.linear.x == 0.{
+            if player.bounce_timer == 0 {
+                if velocity.linear.x == 0. {
                     animator.animation = "idle".to_string();
-                }
-                else {
+                } else {
                     animator.animation = "walk".to_string();
                 }
             }
-            
         }
-
-
-
-
-
     }
 }
 
-
-
-fn check_in_bounds(
-    player: Single<&Transform, With<Player>>,
-    mut commands: Commands,
-) {
-    if player.translation.y < -0.0 -PLAYER_SIZE{ // || player.translation.y>CANVAS_SIZE.y/2.0+PLAYER_SIZE{
+fn check_in_bounds(player: Single<&Transform, With<Player>>, mut commands: Commands) {
+    if player.translation.y < -0.0 - PLAYER_SIZE {
+        // || player.translation.y>CANVAS_SIZE.y/2.0+PLAYER_SIZE{
         info!("check_in_bounds");
         commands.trigger(EndGame);
     }
- }
+}
 
 fn respawn_on_endgame(
     _: On<EndGame>,
@@ -340,8 +331,7 @@ fn move_camera(
         player.translation.y,
         camera.translation.z,
     );
-    camera.translation = camera.translation.lerp(target, lerp_speed * time.delta_secs());
-}   
-
-
-
+    camera.translation = camera
+        .translation
+        .lerp(target, lerp_speed * time.delta_secs());
+}
