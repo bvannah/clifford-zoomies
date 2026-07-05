@@ -156,7 +156,7 @@ pub fn startup(
         },
         RigidBody::Dynamic,
         Collider::cuboid(PLAYER_SIZE / 2.0, PLAYER_SIZE / 2.0/2.0),
-        Restitution::new(0.8),
+        Restitution::new(0.3),
         Friction::new(0.7),
         ColliderMassProperties::Density(2.0),
         LockedAxes::ROTATION_LOCKED,

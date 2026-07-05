@@ -40,15 +40,11 @@ world map! biomes, random spawning, etc.
 TODO:
 if there are more than N furns within radius of player, dont spawn more
 dont spawn any to trap player, or let player bite out
-improve movement a LOT -- the balance between vertical and horizontal movement seems wrong
+improve movement a LOT -- the balance between vertical and horizontal movement seems wrongs
 make a background image -- custom, blank room that can be repeated
 add custom furniture like desks and stuff that have colliders, random furniture will not spawn there
-
-
-
-ahhhh current bounce collision event/count each direction bounce thing is not gonna work because the translations for each collider are not their edges
-calculate weird angle of center of each object (translation) to determine which bounce is best
-
+add timing forgiveness for bouncing
+test bouncing :)
 
 */
 
