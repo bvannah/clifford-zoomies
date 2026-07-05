@@ -213,7 +213,11 @@ fn controls(
                 if player.bottom_walled > 0_i32{ // TODO: LR collider, bounce!
                     player.bounce_timer =  1; // reset bounce timer
                     velocity.linear.x *= 1.2;
-                    velocity.linear.y *= 2.;
+                    if velocity.linear.y < 0.{
+                        velocity.linear.y *= -1.;
+                    }
+                    velocity.linear.y += 400.;
+                    velocity.linear.y *= 1.2;
                     // play abbreviated jump animation
                     // add y velocity if it's low, multiply y velocity, multiply/bounce x velocity
                 }
@@ -221,7 +225,7 @@ fn controls(
                     player.bounce_timer =  1; // reset bounce timer
                     velocity.linear.x += 200.;
                     velocity.linear.x *= 2.;
-                    velocity.linear.y += 50.;
+                    velocity.linear.y += 300.;
                     // play abbreviated jump animation
                     // add y velocity if it's low, multiply y velocity, multiply/bounce x velocity
                 }
@@ -229,7 +233,7 @@ fn controls(
                     player.bounce_timer =  1; // reset bounce timer
                     velocity.linear.x -= 200.;
                     velocity.linear.x *= 2.;
-                    velocity.linear.y += 50.;
+                    velocity.linear.y += 300.;
                     // play abbreviated jump animation
                     // add y velocity if it's low, multiply y velocity, multiply/bounce x velocity
                 }
