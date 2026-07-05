@@ -28,25 +28,36 @@ interesting npcs
     if they see you, they will stop or say hi
     frogs, people, other dogs, cats, birds
 world map! biomes, random spawning, etc.
+
+
+// to give the feeling of breaking the game, play a cutscene each time a player breaks out of bounds or bugs the game
+// the cutscene will run 1/n percent of the time, where n is 1+number of times it has been ran before
+// n * 4 percent of the cutscene will be corrupted each time and shortened
 */
 
 
 /*
 TODO:
-turn off bboxes for release version
-make player collision box much shorter -- half the height. this will require separating sprite from collision box
-add detailed background texture to make it look like you are moving faster
-make furns spawn within radius of player, quite wide, pretty tall, not below though
-    if there are too many furns, dont spawn more?
+if there are more than N furns within radius of player, dont spawn more
+dont spawn any to trap player, or let player bite out
 improve movement a LOT -- the balance between vertical and horizontal movement seems wrong
 make a background image -- custom, blank room that can be repeated
 add custom furniture like desks and stuff that have colliders, random furniture will not spawn there
 
 
+
+ahhhh current bounce collision event/count each direction bounce thing is not gonna work because the translations for each collider are not their edges
+calculate weird angle of center of each object (translation) to determine which bounce is best
+
+
 */
 
+use bevy::ecs::system::IntoResult;
+use bevy::input::mouse::MouseButtonInput;
+use bevy::math::VectorSpace;
 use bevy::{prelude::*, sprite_render::Material2dPlugin};
 use bevy_rapier2d::prelude::*;
+// use bevy_rapier2d::plugin::context::systemparams::*;
 
 mod not_bevy;
 use not_bevy::animation::*;
@@ -55,6 +66,7 @@ use not_bevy::constants_and_startup::{
 };
 use not_bevy::player_components::Player;
 use not_bevy::spawn_sprites::*;
+use not_bevy::bounce::*;
 
 
 // #[require(Gravity(1000.), Velocity)]
@@ -95,19 +107,49 @@ fn controls(
     mut velocity: Single<&mut Velocity, With<Player>>,
     // player_entity: Single<&mut Entity, With<Player>>,
     // mut player: Single<&mut Player>,
-    mut player_query : Query<(&mut Player)>,
+    mut player_query : Query<(Entity, &mut Player, &Transform)>,
     mut sprite_query : Query<(&mut Sprite, &mut Animator)>,
-    collider_query: Query<&Collider>,
+    collider_query: Query<(&Collider, &Transform), With<Furn>>, // are walls furns? i guess it doesnt matter
     mut collision_events: MessageReader<CollisionEvent>,
     mut contact_force_events: MessageReader<ContactForceEvent>,
+    rapier_context: ReadRapierContext,
     buttons: Res<ButtonInput<KeyCode>>, 
+    mouse_buttons: Res<ButtonInput<MouseButton>>,
+    window_query: Query<&Window>,
 ) {
 
-    if let Ok(mut player) = player_query.single_mut() &&
+    if let Ok((player_entity, mut player, p_transform)) = player_query.single_mut() &&
         let Ok((mut sprite, mut animator)) = sprite_query.single_mut(){
+
+        let player_position = p_transform.translation;
+        let player_id = player_entity.index();
+
+
+        for event in collision_events.read(){
+            match event {
+                CollisionEvent::Started(entity1, entity2, flags) => {
+                    
+                    let is_start = true;
+                    info!("Collision started between {:?} and {:?}", entity1, entity2);
+                    process_bounce_directions(entity1, entity2, &mut player, player_id, is_start, & rapier_context);
+                }
+                CollisionEvent::Stopped(entity1, entity2, flags) => {
+
+                    let is_start = false;
+                    info!("Collision stopped between {:?} and {:?}", entity1, entity2);
+                    process_bounce_directions(entity1, entity2, &mut player, player_id, is_start, & rapier_context);
+
+                }
+            }
+
+        }
+
+
+
 
         // update grounded status
         // TODO: should really be based on colliders
+        // maybe if linear velocity is low and we are touching something below??
         if velocity.linear.y == 0.0{
             player.grounded = true;
         }
@@ -123,8 +165,34 @@ fn controls(
             sprite.flip_x = true;
         }
 
+        let has_clicked: bool = false;
+        let cursor_pos: Vec2 = Vec2::ZERO;
+        if mouse_buttons.just_pressed(MouseButton::Left){
+            let window = window_query.single().unwrap();
+            if let Some(cursor_pos) = window.cursor_position(){
+                // get furns that contain this cursor_pos and remove them
+                // TODO: in the future, lower bite range, add animation, add sound
+                // update cursor status and click status
+
+            }
+
+        }
 
         // update LR collider status for left-right
+        // detect if there is an object colliding left, right, and/or bottom
+        // update bounce statuses
+        // for (furn, f_transform) in collider_query{
+        //     if f_transform.translation.x 
+                // update LR collider status for left-right
+                // detect if there is an object colliding left, right, and/or bottom
+
+                // despawn all furns if player clicks on them 
+                // will allow player to escape if they can click walls (indiv pixels)
+
+
+        // }
+
+
 
         // update bounce timer regardless. we will set it to 0 later if we want to
         if player.bounce_timer != 0{
@@ -145,12 +213,33 @@ fn controls(
 
         if buttons.just_pressed(KeyCode::KeyW// here, we can replace this first velocity with W, and maybe velocity needs to be a 3d vector to handle the movement. or, y_velocity, x_velocity, z_velocity
         ) {
-            if false{ // TODO: LR collider, bounce!
-                player.bounce_timer =  1; // reset bounce timer
-                // play abbreviated jump animation
-                // add y velocity if it's low, multiply y velocity, multiply/bounce x velocity
-            }
-            else if player.grounded && player.bounce_timer == 0{ // start basic jump
+            if !player.grounded{// in midair, bounce
+                if player.bottom_walled > 0_i32{ // TODO: LR collider, bounce!
+                    player.bounce_timer =  1; // reset bounce timer
+                    velocity.linear.x *= 1.2;
+                    velocity.linear.y *= 2.;
+                    // play abbreviated jump animation
+                    // add y velocity if it's low, multiply y velocity, multiply/bounce x velocity
+                }
+                if player.left_walled > 0_i32{
+                    player.bounce_timer =  1; // reset bounce timer
+                    velocity.linear.x += 200.;
+                    velocity.linear.x *= 2.;
+                    velocity.linear.y += 50.;
+                    // play abbreviated jump animation
+                    // add y velocity if it's low, multiply y velocity, multiply/bounce x velocity
+                }
+                if player.right_walled > 0_i32{
+                    player.bounce_timer =  1; // reset bounce timer
+                    velocity.linear.x -= 200.;
+                    velocity.linear.x *= 2.;
+                    velocity.linear.y += 50.;
+                    // play abbreviated jump animation
+                    // add y velocity if it's low, multiply y velocity, multiply/bounce x velocity
+                }
+
+                }
+            else if player.bounce_timer == 0{ // grounded, start basic jump
                 player.bounce_timer += 1;
                 animator.animation = "jump".to_string();
             }
@@ -360,15 +449,15 @@ fn display_events(
     mut collision_events: MessageReader<CollisionEvent>,
     mut contact_force_events: MessageReader<ContactForceEvent>,
 ) {
-    for collision_event in collision_events.read() {
-        // println!("Received collision event: {:?}", collision_event);
-        info!("Received collision event: {:?}", collision_event);
+    // for collision_event in collision_events.read() {
+    //     // println!("Received collision event: {:?}", collision_event);
+    //     info!("Received collision event: {:?}", collision_event);
 
-    }
+    // }
 
-    for contact_force_event in contact_force_events.read() {
-        info!("Received contact force event: {:?}", contact_force_event);
-    }
+    // for contact_force_event in contact_force_events.read() {
+    //     info!("Received contact force event: {:?}", contact_force_event);
+    // }
 }
 
 fn update_player_collisions(player_entity: Single<Entity, With<Player>>){

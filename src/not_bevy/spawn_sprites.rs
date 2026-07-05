@@ -23,7 +23,7 @@ impl Plugin for FurnPlugin{
             (
                 despawn_furns,
                 animate_furns,
-                spawn_furns, // in the future, we want to have them spawn in random places at random times
+                spawn_furns,
             ),
         );
     }
@@ -41,21 +41,24 @@ fn spawn_furns(
         let mut rng = rand::rng();
 
         if rng.random_bool(0.5/60.0){
-            info!("Spawning furns");
-            info!("{}", rng.random_range(50.0..100.0));
+            // info!("Spawning furns");
+            // info!("{}", rng.random_range(50.0..100.0));
 
             let min_x: f32 = -MAX_SIDE_DIST.max(player.translation.x - side_player_spawn_dist);
             let min_y: f32 = 0.0_f32.max(player.translation.y-below_player_spawn_dist);
             let max_x: f32 = MAX_SIDE_DIST.min(player.translation.x + side_player_spawn_dist);
             let max_y: f32 = LEVEL1_HEIGHT.min(player.translation.y + above_player_spawn_dist);
 
+            // TODO: count the number of furns in this space, dont spawn too many
+            // TODO: it's possible, albeit extremely unlikely, that a furn spawns exactly where the player is. they'd get stuck or have momentum halted
+            // furns should spawn wherever the player is. limited by out of bounds, and dont spawn more than a bit below player
+
+
+
             spawn_furn(commands, asset_server,
             rng.random_range(50.0..100.0),
             rng.random_range(20.0..50.0),
 
-
-            // TODO: it's possible, albeit extremely unlikely, that a furn spawns exactly where the player is. they'd get stuck or have momentum halted
-            // furns should spawn wherever the player is. limited by out of bounds, and dont spawn more than a bit below player
 
             rng.random_range(min_x..max_x),
             rng.random_range(min_y..max_y),
@@ -94,13 +97,7 @@ fn spawn_furn(
                     );
                 },
     );
-    
-    // let furn_transform = transform_helper
-    //     .compute_global_transform(entity)?;
-    // let furn_collider = Aabb2d::new(
-    //     furn_transform.translation().xy(),
-    //     sprite.custom_size.unwrap() / 2.,
-    // );
+
 
 
     commands.spawn((
@@ -117,9 +114,6 @@ fn spawn_furn(
             ..default()
         },
         Transform::from_xyz(x_location, y_location, 1.0),
-        // Collider::cuboid(furn_transform.translation().xy(),
-        // sprite.custom_size.unwrap() / 2.,),
-        // Collider::cuboid(25.0, 10.0),
         Collider::cuboid(x_size/2.0, y_size/2.0),
         Furn    
     ));

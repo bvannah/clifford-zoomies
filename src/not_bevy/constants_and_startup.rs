@@ -26,6 +26,7 @@ pub const pspawn_x: f32 = 0.0;
 pub const pspawn_y: f32 = 1.0;
 pub const pspawn_z: f32 = 1.0;
 pub const PLAYER_SPRITE: &str = "cliff/clifford.png";
+pub const BITE_RANGE: f32 = 48.;
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 
@@ -142,9 +143,11 @@ pub fn startup(
 
         Player {
             grounded: true,
-            left_walled: false,
-            right_walled: false,
+            left_walled: 0,
+            right_walled: 0,
+            bottom_walled:0,
             bounce_timer: 0,
+            collider_map: HashMap::new(),
         },
         Transform::from_xyz(pspawn_x, pspawn_y, pspawn_z),
         Velocity {
