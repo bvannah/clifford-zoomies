@@ -129,7 +129,8 @@ fn controls(
         if player.bottom_forgiveness > 0{
             player.bottom_forgiveness -= 1;
         }
-        info!("bf: {}", player.bottom_forgiveness);
+        // info!("bf: {}", player.bottom_forgiveness);
+
 
         for event in collision_events.read(){
             match event {
@@ -239,7 +240,7 @@ fn controls(
                     velocity.linear.y *= 1.2;
                     // play abbreviated jump animation
                     // add y velocity if it's low, multiply y velocity, multiply/bounce x velocity
-                    info!("bottom bounce!");
+                    // info!("bottom bounce!");
                 }
 
                 }

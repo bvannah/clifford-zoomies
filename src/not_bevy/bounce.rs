@@ -30,6 +30,8 @@ pub fn process_bounce_directions(
                         player.bottom_walled -= 1;
                     }
                 info!("Player walls: {}, {}, {}", player.left_walled, player.right_walled, player.bottom_walled);
+                info!("{:#?}", player.collider_map);
+
                 return // early exit because this collision is a stop, not a start
                 }
 
@@ -53,13 +55,13 @@ pub fn process_bounce_directions(
                             if is_start{
                                 player.left_walled += 1;
                                 player.collider_map.insert(entity2.index_u32(), 1_i8);
-                                player.bottom_forgiveness = BOUNCE_FORGIVENESS;
+                                player.left_forgiveness = BOUNCE_FORGIVENESS;
                             }
                         }
                         // info!("velocity y is {}", velocity.linear.y);
                         if normal.x == 0.0 && normal.y < 0.0{// && velocity.linear.y > 0.{
                             if is_start{
-                                if wall_query.contains(*entity2){
+                                if !wall_query.contains(*entity2){
                                     player.bottom_walled += 1;
                                     player.collider_map.insert(entity2.index_u32(), 2_i8);
                                     player.bottom_forgiveness = BOUNCE_FORGIVENESS;
@@ -68,6 +70,8 @@ pub fn process_bounce_directions(
                         }
                     }
                     info!("Player walls: {}, {}, {}", player.left_walled, player.right_walled, player.bottom_walled);
+                    info!("{:#?}", player.collider_map);
+
                 }
                 // if let Ok((en2_collider, en2_transform)) = collider_query.get(*entity2){
                 //     let (is_left_bounce, is_right_bounce, is_bottom_bounce) = get_bounce_directions(player_position, en2_transform.translation);
