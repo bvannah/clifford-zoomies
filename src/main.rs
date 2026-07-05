@@ -110,6 +110,7 @@ fn controls(
     buttons: Res<ButtonInput<KeyCode>>, 
     mouse_buttons: Res<ButtonInput<MouseButton>>,
     window_query: Query<&Window>,
+    wall_query: Query<&NoBounceWall>,
 ) {
 
     if let Ok((player_entity, mut player, p_transform)) = player_query.single_mut() &&
@@ -128,7 +129,7 @@ fn controls(
         if player.bottom_forgiveness > 0{
             player.bottom_forgiveness -= 1;
         }
-
+        info!("bf: {}", player.bottom_forgiveness);
 
         for event in collision_events.read(){
             match event {
@@ -136,13 +137,13 @@ fn controls(
                     
                     let is_start = true;
                     info!("Collision started between {:?} and {:?}", entity1, entity2);
-                    process_bounce_directions(entity1, entity2, &mut player, player_id, is_start, & rapier_context, &velocity);
+                    process_bounce_directions(entity1, entity2, &mut player, player_id, is_start, & rapier_context, &velocity, wall_query);
                 }
                 CollisionEvent::Stopped(entity1, entity2, flags) => {
 
                     let is_start = false;
                     info!("Collision stopped between {:?} and {:?}", entity1, entity2);
-                    process_bounce_directions(entity1, entity2, &mut player, player_id, is_start, & rapier_context, &velocity);
+                    process_bounce_directions(entity1, entity2, &mut player, player_id, is_start, & rapier_context, &velocity, wall_query);
 
                 }
             }

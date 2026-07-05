@@ -3,6 +3,7 @@ use bevy_rapier2d::dynamics::Velocity;
 use bevy_rapier2d::{plugin::ReadRapierContext, rapier::geometry::CollisionEventFlags};
 use super::player_components::*;
 use super::constants_and_startup::*;
+use super::spawn_sprites::*;
 
 pub fn process_bounce_directions(
     entity1: &Entity,
@@ -13,6 +14,7 @@ pub fn process_bounce_directions(
     is_start: bool,
     rapier_context: &ReadRapierContext,
     velocity: & Velocity,
+    wall_query: Query<&NoBounceWall>,
 
 ){
 
@@ -45,7 +47,6 @@ pub fn process_bounce_directions(
                                 player.right_walled += 1;
                                 player.collider_map.insert(entity2.index_u32(), 0_i8);
                                 player.right_forgiveness = BOUNCE_FORGIVENESS;
-
                             }
                         }
                         if normal.x < 0.0{
@@ -53,17 +54,16 @@ pub fn process_bounce_directions(
                                 player.left_walled += 1;
                                 player.collider_map.insert(entity2.index_u32(), 1_i8);
                                 player.bottom_forgiveness = BOUNCE_FORGIVENESS;
-
-
                             }
                         }
                         // info!("velocity y is {}", velocity.linear.y);
                         if normal.x == 0.0 && normal.y < 0.0{// && velocity.linear.y > 0.{
                             if is_start{
-                                player.bottom_walled += 1;
-                                player.collider_map.insert(entity2.index_u32(), 2_i8);
-                                player.bottom_forgiveness = BOUNCE_FORGIVENESS;
-
+                                if wall_query.contains(*entity2){
+                                    player.bottom_walled += 1;
+                                    player.collider_map.insert(entity2.index_u32(), 2_i8);
+                                    player.bottom_forgiveness = BOUNCE_FORGIVENESS;
+                                }
                             }
                         }
                     }
